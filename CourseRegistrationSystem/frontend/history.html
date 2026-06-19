@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Registration System | History</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 class="page-title">Registration History</h1>
+    <p class="page-sub">All courses you have enrolled in.</p>
+
+    <div id="historyBox">
+      <div class="loading"><div class="spinner"></div>Loading history…</div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    renderNavbar("history.html");
+    renderFooter();
+    if (!requireLogin()) { }
+
+    const me = Session.student();
+
+    async function loadHistory() {
+      const box = document.getElementById("historyBox");
+      try {
+        const regs = await api(`/students/${me.student_id}/courses`, { auth: true });
+        if (regs.length === 0) {
+          box.innerHTML = `<div class="card empty"><div class="icon">&#128203;</div>No registration history yet.</div>`;
+          return;
+        }
+        box.innerHTML = `
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>#</th><th>Course</th><th>Instructor</th><th>Credit Hours</th><th>Registered On</th></tr>
+              </thead>
+              <tbody>
+                ${regs.map((r, i) => `
+                  <tr>
+                    <td>${i + 1}</td>
+                    <td>${escapeHtml(r.course_name)}</td>
+                    <td>${escapeHtml(r.instructor || "TBA")}</td>
+                    <td>${r.credit_hours}</td>
+                    <td>${r.registration_date}</td>
+                  </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>`;
+      } catch (e) {
+        box.innerHTML = `<div class="card empty"><div class="icon">&#9888;</div>${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    loadHistory();
+  </script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Registration System | Login</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="auth-wrap">
+      <div class="card">
+        <div class="tabs">
+          <div class="tab active" id="tabLogin">Login</div>
+          <div class="tab" id="tabRegister">Register</div>
+        </div>
+
+        <div class="alert error" id="alert"></div>
+
+        <!-- LOGIN FORM -->
+        <div id="loginForm">
+          <div class="form-group">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" placeholder="you@umt.edu.pk" />
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="Your password" />
+          </div>
+          <button class="btn block" id="loginBtn">Login</button>
+          <p style="text-align:center;margin-top:14px;color:var(--muted);font-size:0.88rem;">
+            Demo admin: admin@umt.edu.pk / admin123
+          </p>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div id="registerForm" style="display:none;">
+          <div class="form-group">
+            <label for="regName">Full Name</label>
+            <input type="text" id="regName" placeholder="Your name" />
+          </div>
+          <div class="form-group">
+            <label for="regEmail">Email</label>
+            <input type="email" id="regEmail" placeholder="you@umt.edu.pk" />
+          </div>
+          <div class="form-group">
+            <label for="regDept">Department</label>
+            <input type="text" id="regDept" placeholder="e.g. Cyber Security" />
+          </div>
+          <div class="form-group">
+            <label for="regPassword">Password (min 6 chars)</label>
+            <input type="password" id="regPassword" placeholder="Create a password" />
+          </div>
+          <button class="btn block success" id="registerBtn">Create Account</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    renderNavbar("login.html");
+    renderFooter();
+
+    // If already logged in, skip to dashboard.
+    if (Session.isLoggedIn()) window.location.href = "dashboard.html";
+
+    const alertBox = document.getElementById("alert");
+    function showError(msg) {
+      alertBox.textContent = msg;
+      alertBox.classList.add("show");
+    }
+    function clearError() { alertBox.classList.remove("show"); }
+
+    // Tab switching
+    const tabLogin = document.getElementById("tabLogin");
+    const tabRegister = document.getElementById("tabRegister");
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+
+    tabLogin.addEventListener("click", () => {
+      tabLogin.classList.add("active"); tabRegister.classList.remove("active");
+      loginForm.style.display = "block"; registerForm.style.display = "none"; clearError();
+    });
+    tabRegister.addEventListener("click", () => {
+      tabRegister.classList.add("active"); tabLogin.classList.remove("active");
+      registerForm.style.display = "block"; loginForm.style.display = "none"; clearError();
+    });
+
+    // Login
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      clearError();
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      if (!email || !password) { showError("Please enter your email and password."); return; }
+      try {
+        const data = await api("/login", { method: "POST", body: { email, password } });
+        Session.save(data.access_token, data.student);
+        toast("Welcome back, " + data.student.name + "!", "success");
+        setTimeout(() => {
+          window.location.href = data.student.role === "admin" ? "admin.html" : "dashboard.html";
+        }, 600);
+      } catch (e) { showError(e.message); }
+    });
+
+    // Register
+    document.getElementById("registerBtn").addEventListener("click", async () => {
+      clearError();
+      const name = document.getElementById("regName").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const department = document.getElementById("regDept").value.trim();
+      const password = document.getElementById("regPassword").value;
+      if (!name || !email || !password) { showError("Name, email and password are required."); return; }
+      if (password.length < 6) { showError("Password must be at least 6 characters."); return; }
+      try {
+        await api("/register", { method: "POST", body: { name, email, department, password } });
+        // Auto-login after successful registration.
+        const data = await api("/login", { method: "POST", body: { email, password } });
+        Session.save(data.access_token, data.student);
+        toast("Account created successfully!", "success");
+        setTimeout(() => (window.location.href = "dashboard.html"), 600);
+      } catch (e) { showError(e.message); }
+    });
+
+    // Allow Enter key to submit
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      if (loginForm.style.display !== "none") document.getElementById("loginBtn").click();
+      else document.getElementById("registerBtn").click();
+    });
+  </script>
+</body>
+</html>

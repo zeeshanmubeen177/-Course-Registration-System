@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Registration System | Courses</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 class="page-title">Available Courses</h1>
+    <p class="page-sub">Search, filter and enroll in courses.</p>
+
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="🔍 Search name or instructor…" />
+      <select id="creditFilter">
+        <option value="">All credit hours</option>
+        <option value="3">≤ 3 credit hours</option>
+        <option value="4">≤ 4 credit hours</option>
+      </select>
+      <select id="seatFilter">
+        <option value="">Any availability</option>
+        <option value="1">Has free seats</option>
+      </select>
+      <button class="btn" id="searchBtn">Apply</button>
+      <button class="btn outline" id="resetBtn">Reset</button>
+    </div>
+
+    <div id="coursesGrid">
+      <div class="loading"><div class="spinner"></div>Loading courses…</div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    renderNavbar("courses.html");
+    renderFooter();
+
+    const grid = document.getElementById("coursesGrid");
+
+    async function loadCourses() {
+      grid.innerHTML = `<div class="loading"><div class="spinner"></div>Loading courses…</div>`;
+      const params = new URLSearchParams();
+      const search = document.getElementById("searchInput").value.trim();
+      const maxCredits = document.getElementById("creditFilter").value;
+      const minSeats = document.getElementById("seatFilter").value;
+      if (search) params.set("search", search);
+      if (maxCredits) params.set("max_credits", maxCredits);
+      if (minSeats) params.set("min_seats", minSeats);
+
+      try {
+        const courses = await api("/courses" + (params.toString() ? "?" + params : ""));
+        if (courses.length === 0) {
+          grid.innerHTML = `<div class="card empty"><div class="icon">&#128269;</div>No courses match your search.</div>`;
+          return;
+        }
+        grid.innerHTML = `<div class="grid grid-3">` + courses.map(renderCourse).join("") + `</div>`;
+      } catch (e) {
+        grid.innerHTML = `<div class="card empty"><div class="icon">&#9888;</div>${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    function renderCourse(c) {
+      const seatBadge = c.available_seats > 0
+        ? `<span class="badge green">${c.available_seats} seats</span>`
+        : `<span class="badge red">Full</span>`;
+      const enrollBtn = Session.isLoggedIn()
+        ? `<button class="btn sm success" ${c.available_seats <= 0 ? "disabled" : ""} onclick="enroll(${c.course_id})">Enroll</button>`
+        : `<a href="login.html" class="btn sm success">Login to Enroll</a>`;
+      return `
+        <div class="card course-card">
+          <h3>${escapeHtml(c.course_name)}</h3>
+          <div class="course-meta">
+            <span class="badge">${escapeHtml(c.instructor || "TBA")}</span>
+            <span class="badge gray">${c.credit_hours} cr</span>
+            ${seatBadge}
+          </div>
+          <div class="actions">
+            <a href="course-details.html?id=${c.course_id}" class="btn sm outline">Details</a>
+            ${enrollBtn}
+          </div>
+        </div>`;
+    }
+
+    async function enroll(courseId) {
+      const me = Session.student();
+      try {
+        await api("/enroll", { method: "POST", auth: true, body: { student_id: me.student_id, course_id: courseId } });
+        toast("Enrolled successfully!", "success");
+        loadCourses();
+      } catch (e) { toast(e.message, "error"); }
+    }
+
+    document.getElementById("searchBtn").addEventListener("click", loadCourses);
+    document.getElementById("searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") loadCourses(); });
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("creditFilter").value = "";
+      document.getElementById("seatFilter").value = "";
+      loadCourses();
+    });
+
+    loadCourses();
+  </script>
+</body>
+</html>

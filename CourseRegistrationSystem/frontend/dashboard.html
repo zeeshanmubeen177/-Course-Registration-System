@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Registration System | Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 class="page-title" id="welcome">Dashboard</h1>
+    <p class="page-sub">Your registered courses and quick stats.</p>
+
+    <div class="grid grid-3" id="statGrid" style="margin-bottom:30px;">
+      <div class="card stat"><div class="num" id="statCourses">—</div><div class="label">My Courses</div></div>
+      <div class="card stat"><div class="num" id="statCredits">—</div><div class="label">Total Credit Hours</div></div>
+      <div class="card stat"><div class="num" id="statAvailable">—</div><div class="label">Courses Available</div></div>
+    </div>
+
+    <div class="section-head">
+      <h2 class="page-title" style="font-size:1.3rem;">My Registered Courses</h2>
+      <a href="courses.html" class="btn">+ Enroll in a Course</a>
+    </div>
+
+    <div id="myCourses">
+      <div class="loading"><div class="spinner"></div>Loading your courses…</div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    renderNavbar("dashboard.html");
+    renderFooter();
+    if (!requireLogin()) { /* redirected */ }
+
+    const me = Session.student();
+    document.getElementById("welcome").textContent = "Welcome, " + (me ? me.name : "Student");
+
+    async function loadDashboard() {
+      const container = document.getElementById("myCourses");
+      try {
+        const [regs, stats] = await Promise.all([
+          api(`/students/${me.student_id}/courses`, { auth: true }),
+          api("/dashboard"),
+        ]);
+
+        const totalCredits = regs.reduce((sum, r) => sum + (r.credit_hours || 0), 0);
+        document.getElementById("statCourses").textContent = regs.length;
+        document.getElementById("statCredits").textContent = totalCredits;
+        document.getElementById("statAvailable").textContent = stats.total_courses;
+
+        if (regs.length === 0) {
+          container.innerHTML = `
+            <div class="card empty">
+              <div class="icon">&#128218;</div>
+              <p>You are not enrolled in any courses yet.</p>
+              <a href="courses.html" class="btn" style="margin-top:12px;">Browse Courses</a>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = `<div class="grid grid-3">` + regs.map((r) => `
+          <div class="card course-card">
+            <h3>${escapeHtml(r.course_name)}</h3>
+            <div class="course-meta">
+              <span class="badge">${escapeHtml(r.instructor || "TBA")}</span>
+              <span class="badge gray">${r.credit_hours} cr</span>
+            </div>
+            <p style="color:var(--muted);font-size:0.85rem;">Enrolled on ${r.registration_date}</p>
+            <div class="actions">
+              <a href="course-details.html?id=${r.course_id}" class="btn sm outline">Details</a>
+              <button class="btn sm danger" onclick="dropCourse(${r.registration_id})">Drop</button>
+            </div>
+          </div>`).join("") + `</div>`;
+      } catch (e) {
+        container.innerHTML = `<div class="card empty"><div class="icon">&#9888;</div>${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    async function dropCourse(registrationId) {
+      if (!confirm("Are you sure you want to drop this course?")) return;
+      try {
+        await api(`/enroll/${registrationId}`, { method: "DELETE", auth: true });
+        toast("Course dropped.", "success");
+        loadDashboard();
+      } catch (e) { toast(e.message, "error"); }
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Registration System | About</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 class="page-title">About the Project</h1>
+    <p class="page-sub">Open Source Software Development — Final Semester Project</p>
+
+    <div class="card" style="margin-bottom:22px;">
+      <h3 style="color:var(--primary);margin-bottom:10px;">Problem Statement</h3>
+      <p style="color:var(--muted);">
+        In many educational institutions, course registration is performed
+        manually or through outdated systems. This is time-consuming, error-prone
+        and hard to manage at scale. Students struggle to view available courses,
+        register, and track their enrollment, while administrators find it
+        difficult to maintain records. This system automates the entire process
+        through a clean web interface backed by a reliable database.
+      </p>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:22px;">
+      <div class="card">
+        <h3 style="color:var(--primary);margin-bottom:10px;">Objective</h3>
+        <p style="color:var(--muted);">
+          Build a full-stack web application that allows students to register for
+          courses online and enables administrators to manage courses and
+          registrations efficiently, with all data stored in a centralized
+          PostgreSQL database.
+        </p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--primary);margin-bottom:10px;">Target Users</h3>
+        <p style="color:var(--muted);">
+          <strong>Students</strong> — register, log in, browse courses, enrol,
+          drop, and view their schedule.<br />
+          <strong>Administrators</strong> — manage student records, add/update/delete
+          courses, and monitor all registrations and statistics.
+        </p>
+      </div>
+    </div>
+
+    <h2 class="page-title" style="font-size:1.35rem;">Technology Stack</h2>
+    <div class="table-wrap" style="margin-bottom:26px;">
+      <table>
+        <thead>
+          <tr><th>Category</th><th>Technology</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Frontend</td><td>HTML5, CSS3, JavaScript</td><td>User interface and client-side logic</td></tr>
+          <tr><td>Backend</td><td>Python, FastAPI</td><td>REST API development</td></tr>
+          <tr><td>Database</td><td>PostgreSQL (Supabase)</td><td>Cloud-hosted relational database</td></tr>
+          <tr><td>Auth</td><td>JWT, PBKDF2 hashing</td><td>Secure authentication</td></tr>
+          <tr><td>Version Control</td><td>Git, GitHub</td><td>Source code management</td></tr>
+          <tr><td>Deployment</td><td>Render + Vercel</td><td>Backend and frontend hosting</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="page-title" style="font-size:1.35rem;">Submitted By</h2>
+    <div class="card">
+      <div class="profile-row"><span>Student Name</span><span>Zeeshan Mubeen</span></div>
+      <div class="profile-row"><span>Roll Number</span><span>F2024408151</span></div>
+      <div class="profile-row"><span>Section</span><span>Y9</span></div>
+      <div class="profile-row"><span>Department</span><span>Cyber Security</span></div>
+      <div class="profile-row"><span>Submitted To</span><span>Sir Abdullah Majid Butt</span></div>
+      <div class="profile-row" style="border-bottom:none;"><span>Institution</span><span>UMT Lahore</span></div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    renderNavbar("about.html");
+    renderFooter();
+  </script>
+</body>
+</html>

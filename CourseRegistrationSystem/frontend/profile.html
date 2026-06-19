@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Registration System | Profile</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1 class="page-title">My Profile</h1>
+    <p class="page-sub">View and update your account information.</p>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h3 style="color:var(--primary);margin-bottom:14px;">Account Details</h3>
+        <div id="profileView">
+          <div class="loading"><div class="spinner"></div>Loading…</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="color:var(--primary);margin-bottom:14px;">Update Profile</h3>
+        <div class="alert error" id="alert"></div>
+        <div class="form-group">
+          <label for="upName">Full Name</label>
+          <input type="text" id="upName" />
+        </div>
+        <div class="form-group">
+          <label for="upDept">Department</label>
+          <input type="text" id="upDept" />
+        </div>
+        <div class="form-group">
+          <label for="upPassword">New Password (leave blank to keep current)</label>
+          <input type="password" id="upPassword" placeholder="••••••" />
+        </div>
+        <button class="btn" id="saveBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    renderNavbar("profile.html");
+    renderFooter();
+    if (!requireLogin()) { }
+
+    const me = Session.student();
+    const alertBox = document.getElementById("alert");
+
+    async function loadProfile() {
+      try {
+        const s = await api(`/students/${me.student_id}`, { auth: true });
+        document.getElementById("profileView").innerHTML = `
+          <div class="profile-row"><span>Student ID</span><span>#${s.student_id}</span></div>
+          <div class="profile-row"><span>Name</span><span>${escapeHtml(s.name)}</span></div>
+          <div class="profile-row"><span>Email</span><span>${escapeHtml(s.email)}</span></div>
+          <div class="profile-row"><span>Department</span><span>${escapeHtml(s.department || "—")}</span></div>
+          <div class="profile-row" style="border-bottom:none;"><span>Role</span><span>${escapeHtml(s.role)}</span></div>`;
+        document.getElementById("upName").value = s.name;
+        document.getElementById("upDept").value = s.department || "";
+      } catch (e) {
+        document.getElementById("profileView").innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+      alertBox.classList.remove("show");
+      const body = {
+        name: document.getElementById("upName").value.trim(),
+        department: document.getElementById("upDept").value.trim(),
+      };
+      const pw = document.getElementById("upPassword").value;
+      if (pw) {
+        if (pw.length < 6) { alertBox.textContent = "Password must be at least 6 characters."; alertBox.classList.add("show"); return; }
+        body.password = pw;
+      }
+      try {
+        const updated = await api(`/students/${me.student_id}`, { method: "PUT", auth: true, body });
+        // refresh stored session info
+        Session.save(Session.token(), updated);
+        document.getElementById("upPassword").value = "";
+        toast("Profile updated.", "success");
+        loadProfile();
+      } catch (e) { alertBox.textContent = e.message; alertBox.classList.add("show"); }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>

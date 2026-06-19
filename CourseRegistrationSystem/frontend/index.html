@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Registration System | Home</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>Course Registration System</h1>
+      <p>
+        A modern, web-based platform that lets students browse and enrol in
+        courses online, while administrators manage courses and registrations
+        with ease. Built for the UMT Open Source Software Development project.
+      </p>
+      <a href="courses.html" class="btn">Browse Courses</a>
+      <a href="login.html" class="btn outline">Login / Register</a>
+    </section>
+
+    <h2 class="page-title">Why use this system?</h2>
+    <p class="page-sub">Everything you need to manage course registration in one place.</p>
+
+    <div class="grid grid-3">
+      <div class="card feature">
+        <div class="icon">&#128218;</div>
+        <h3>Browse Courses</h3>
+        <p>View all available courses with instructor, credit hours and live seat availability.</p>
+      </div>
+      <div class="card feature">
+        <div class="icon">&#9989;</div>
+        <h3>Easy Enrollment</h3>
+        <p>Register for courses in a single click and drop them anytime from your dashboard.</p>
+      </div>
+      <div class="card feature">
+        <div class="icon">&#128272;</div>
+        <h3>Secure Login</h3>
+        <p>Your account is protected with hashed passwords and token-based authentication.</p>
+      </div>
+      <div class="card feature">
+        <div class="icon">&#128202;</div>
+        <h3>Live Dashboard</h3>
+        <p>Track your registered courses and total credit hours at a glance.</p>
+      </div>
+      <div class="card feature">
+        <div class="icon">&#128270;</div>
+        <h3>Search &amp; Filter</h3>
+        <p>Quickly find courses by name, instructor, credit hours or available seats.</p>
+      </div>
+      <div class="card feature">
+        <div class="icon">&#128104;&#8205;&#128187;</div>
+        <h3>Admin Controls</h3>
+        <p>Administrators can add, update and delete courses and monitor all registrations.</p>
+      </div>
+    </div>
+
+    <h2 class="page-title" style="margin-top:36px;">System at a glance</h2>
+    <p class="page-sub">Live statistics pulled from the backend.</p>
+    <div class="grid grid-4" id="statGrid">
+      <div class="loading"><div class="spinner"></div>Loading statistics…</div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    renderNavbar("index.html");
+    renderFooter();
+
+    async function loadStats() {
+      const grid = document.getElementById("statGrid");
+      try {
+        const s = await api("/dashboard");
+        grid.innerHTML = `
+          <div class="card stat"><div class="num">${s.total_courses}</div><div class="label">Courses</div></div>
+          <div class="card stat"><div class="num">${s.total_students}</div><div class="label">Students</div></div>
+          <div class="card stat"><div class="num">${s.total_registrations}</div><div class="label">Registrations</div></div>
+          <div class="card stat"><div class="num">${s.total_seats_available}</div><div class="label">Seats Available</div></div>`;
+      } catch (e) {
+        grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="icon">&#9888;</div>${escapeHtml(e.message)}</div>`;
+      }
+    }
+    loadStats();
+  </script>
+</body>
+</html>
