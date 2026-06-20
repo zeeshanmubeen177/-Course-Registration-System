@@ -5,4 +5,4 @@ pydantic[email]==2.9.2
 passlib==1.7.4
 PyJWT==2.9.0
 python-multipart==0.0.9
-psycopg2-binary==2.9.9
+psycopg[binary]==3.2.1
