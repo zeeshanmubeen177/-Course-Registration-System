@@ -8,7 +8,7 @@ Run locally:
 
 Interactive API docs are available at http://127.0.0.1:8000/docs
 
-Implemented endpoints (17 total):
+Implemented endpoints (18 total):
     POST   /register            Register a new student
     POST   /login               Authenticate user, return JWT
     GET    /students            View all students        (admin)
@@ -26,8 +26,10 @@ Implemented endpoints (17 total):
     GET    /students/{id}/courses   Courses a student is enrolled in
     GET    /dashboard           Dashboard statistics
     GET    /                    Health check
+    GET    /config              Public runtime configuration
 """
 
+import os
 from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query, status
@@ -71,6 +73,23 @@ app.add_middleware(
 @app.get("/", tags=["Health"])
 def root():
     return {"message": "Course Registration System API is running.", "docs": "/docs"}
+
+
+# ==========================================================================
+# Public configuration
+# ==========================================================================
+@app.get("/config", tags=["Config"])
+def get_config():
+    """Return public runtime configuration values for the frontend.
+
+    The Supabase anon key is safe to expose here — it is a *public* key
+    intended for use in browser/client code and is already visible in any
+    network request made by the frontend.  Never expose secret service-role
+    keys through this endpoint.
+    """
+    return {
+        "supabase_anon_key": os.getenv("SUPABASE_ANON_KEY"),
+    }
 
 
 # ==========================================================================
