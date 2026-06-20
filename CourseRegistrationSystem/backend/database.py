@@ -20,6 +20,12 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 # Falls back to a local SQLite file so the project runs without any setup.
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./course_registration.db")
 
+# SQLAlchemy defaults the `postgresql://` dialect to psycopg2.  We ship
+# psycopg v3 (psycopg[binary]) instead, so rewrite the scheme to the
+# explicit `postgresql+psycopg://` dialect before the engine is created.
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+
 # SQLite needs a special flag when used with FastAPI's threaded server.
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
