@@ -6,4 +6,4 @@
                       "https://course-registration-api.onrender.com"
    =================================================================== */
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://course-registration-system-production-acf5.up.railway.app";
